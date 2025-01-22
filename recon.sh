@@ -3,7 +3,6 @@
 #
 
 NETWORK=$1
-IP_LIST=$(nmap -sn ${NETWORK} | grep -Eo "([0-9]{1,3}\.){3}[0-9]{1,3}")
 OUTPUT_FILE="${HOME}/output.txt"
 TABLE=()
 
@@ -39,7 +38,7 @@ snatch() {
 # This performs a ping sweep (nmap -sn) of a network and generates a list of IPv4s
 # Check if IP_LIST returns empty. If empty, print diagnostic and exit script.
 #
-
+IP_LIST=$(nmap -sn ${NETWORK} | grep -Eo "([0-9]{1,3}\.){3}[0-9]{1,3}")
 if [[ -z ${IP_LIST} ]]; then
 	echo "No hosts found on network: ${NETWORK}"
 	exit 1
@@ -50,7 +49,6 @@ fi
 # This performs a port scan of hosts discovered and stored in IP_LIST in a regex friendly format.
 # Check if PORT_LIST returns empty. If empty, print diagnostic and exit script.
 #
-
 PORT_LIST=$(docker run --network=host -it --rm --name rustscan rustscan/rustscan:2.1.1  -g -a ${IP_LIST})
 
 if [[ -z ${PORT_LIST} ]]; then
@@ -63,7 +61,6 @@ fi
 # INFORMATION PROCESSING
 # Preparing the info from PORT_LIST for banner grabbing by parsing it into the TABLE array.
 #
-
 while read -r line; do
 	parse "${line}"
 done <<< ${PORT_LIST}
@@ -72,7 +69,6 @@ done <<< ${PORT_LIST}
 # BANNER GRABBING
 # Pull SERVICE and VERSION info from IP and PORT and output to a file in the root.
 #
-
 echo -e "PORT\tSTATE\tSERVICE\tVERSION" > $OUTPUT_FILE
 for entry in ${TABLE[@]}; do
 	IP_PORT=$(echo -e ${entry} | sed 's/\t/ /g')
